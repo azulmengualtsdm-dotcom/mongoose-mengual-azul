@@ -18,14 +18,15 @@ const BookSchema = new Schema(
         required: true,
       },
     ],
-    deleteAt: {
+    deletedAt: {
       type: Date,
       default: null,
     },
   },
   {
     versionKey: false,
+    timestamps: true,
   },
 );
 
-export const BooktModel = model("Books", BookSchema);
+export const BookModel = model("Books", BookSchema);

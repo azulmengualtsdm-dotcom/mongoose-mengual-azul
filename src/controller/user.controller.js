@@ -3,7 +3,7 @@ import { UserModel } from "../models/user.model";
 
 export const usercreate = async (req, res) => {
   try {
-    const data = matchedData();
+    const data = matchedData(req);
     const newUser = await UserModel.create(data);
 
     return res
@@ -16,7 +16,7 @@ export const usercreate = async (req, res) => {
 
 export const getalluser = async (req, res) => {
   try {
-    const users = await UserModel.find({ deleteat: null }).populate("Person");
+    const users = await UserModel.find({ deletedAt: null }).populate("person");
     res.status(200).json({ data: users });
   } catch (error) {
     res.status(500).json({ msg: "error al traer todos los usuarios" });
@@ -26,8 +26,8 @@ export const getalluser = async (req, res) => {
 export const getUserById = async (req, res) => {
   try {
     const { id } = matchedData(req);
-    const user = await UserModel.findOne({ _id: id, deleteat: null }).populate(
-      "Person",
+    const user = await UserModel.findOne({ _id: id, deletedAt: null }).populate(
+      "person",
     );
     if (!user) {
       return res.status(404).json({ msg: "no se encontro al usuario" });
@@ -43,7 +43,7 @@ export const getUserById = async (req, res) => {
 
 export const updateUser = async (req, res) => {
   try {
-    const { id } = req.params;
+    const { id } = matchedData(req);
     const data = matchedData(req);
 
     const updatedUser = await UserModel.findOneAndUpdate(
@@ -51,6 +51,9 @@ export const updateUser = async (req, res) => {
       data,
       { new: true },
     );
+    if (!updatedUser) {
+      return res.status(404).json({ msg: "Usuario no encontrado " });
+    }
 
     return res.status(200).json({
       data: updatedUser,
@@ -66,7 +69,14 @@ export const deleteUser = async (req, res) => {
   try {
     const { id } = matchedData(req);
 
-    const deletedUser = await UserModel.deleteOne({ _id: id });
+    const deletedUser = await UserModel.findByIdAndUpdate(
+      { _id: id },
+      { deletedAt: new Date() },
+      { new: true },
+    );
+    if (!deleteUser) {
+      return res.status(404).json({ msg: "Usuario no encontrado" });
+    }
 
     return res.status(200).json({
       data: deletedUser,
